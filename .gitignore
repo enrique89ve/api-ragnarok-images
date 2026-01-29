@@ -1,0 +1,40 @@
+# dependencies
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+# database
+*.sqlite
+*.db
+
+# dotenv
+.env
+.env.*.local
+
+# logs
+logs
+*.log
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# coverage
+coverage
+*.lcov
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# docs (except README)
+*.md
+!README.md
