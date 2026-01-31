@@ -54,7 +54,9 @@ const server = Bun.serve({
 		}
 
 		if (pathname === "/openapi.json") {
-			const baseUrl = new URL(req.url).origin;
+			const proto = req.headers.get("x-forwarded-proto") ?? "http";
+			const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "localhost:4005";
+			const baseUrl = `${proto}://${host}`;
 			return jsonResponse(getOpenApiSpec(baseUrl));
 		}
 
