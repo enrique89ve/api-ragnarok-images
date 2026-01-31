@@ -6,10 +6,6 @@ out
 dist
 *.tgz
 
-# database
-*.sqlite
-*.db
-
 # dotenv
 .env
 .env.*.local
@@ -34,7 +30,3 @@ coverage
 # OS
 .DS_Store
 Thumbs.db
-
-# docs (except README)
-*.md
-!README.md

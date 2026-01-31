@@ -1,0 +1,99 @@
+{
+	"_comment": "Sample data for Ragnarok Cards API - 5 characters, 20 cards, 5 stats",
+	"characters": [
+		{
+			"CharacterID": "rkcr7a18310c",
+			"NameSlug": "fenrir",
+			"FullName": "fenrir",
+			"Category": "pets",
+			"ShortDescription": "giant wolf, uncontrollable strength",
+			"Lore": "fenrir, the giant wolf, son of loki, is one of the most feared creatures in norse mythology. chained by the gods due to his growing power and ferocity, fenrir symbolizes uncontrollable strength and inevitable fate.",
+			"ElementType": "fire",
+			"ChessPiece": "pawn",
+			"Faction": "pets",
+			"Rarity": "legendary",
+			"Link": null
+		},
+		{
+			"CharacterID": "rkcr6a2d88ba",
+			"NameSlug": "freya",
+			"FullName": "freya",
+			"Category": "goddesses",
+			"ShortDescription": "goddess of love, war",
+			"Lore": "a goddess of love, beauty, war, and death, sister of freyr.",
+			"ElementType": "earth",
+			"ChessPiece": "rook",
+			"Faction": "vanir",
+			"Rarity": "legendary",
+			"Link": "https://mythus.fandom.com/wiki/freyja"
+		},
+		{
+			"CharacterID": "rkcrb29dcbf5",
+			"NameSlug": "loki",
+			"FullName": "loki",
+			"Category": "gods",
+			"ShortDescription": "trickster, cunning, shapeshifter",
+			"Lore": "a trickster god, known for his cunning, shape-shifting, and causing mischief among the gods.",
+			"ElementType": "water",
+			"ChessPiece": "bishop",
+			"Faction": "jotnar",
+			"Rarity": "legendary",
+			"Link": "https://mythus.fandom.com/wiki/loki"
+		},
+		{
+			"CharacterID": "rkcrb1254d5b",
+			"NameSlug": "odin",
+			"FullName": "odin",
+			"Category": "gods",
+			"ShortDescription": "allfather, wisdom, war",
+			"Lore": "the allfather, chief of the aesir, god of war, wisdom, poetry, and death.",
+			"ElementType": "wind",
+			"ChessPiece": "king",
+			"Faction": "aesir",
+			"Rarity": "legendary",
+			"Link": "https://mythus.fandom.com/wiki/odin"
+		},
+		{
+			"CharacterID": "rkcr217cfce6",
+			"NameSlug": "thor",
+			"FullName": "thor",
+			"Category": "gods",
+			"ShortDescription": "thunder god, protector",
+			"Lore": "the god of thunder, known for his immense strength and protection of humanity.",
+			"ElementType": "wind",
+			"ChessPiece": "rook",
+			"Faction": "aesir",
+			"Rarity": "legendary",
+			"Link": "https://mythus.fandom.com/wiki/thor"
+		}
+	],
+	"cards": [
+		{ "art_id": "2477-jzfm669g", "CharacterID": "rkcr7a18310c", "is_main": true },
+		{ "art_id": "0433-1465k5g4", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "1005-wc3i1dke", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "5c26-gfo3pan5", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "8ba9-cuixtu4v", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "c7c8-3eygeu3y", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "d718-mekc8ckp", "CharacterID": "rkcr6a2d88ba", "is_main": true },
+		{ "art_id": "f437-jkhxemxt", "CharacterID": "rkcr6a2d88ba", "is_main": false },
+		{ "art_id": "5dcd-o15t632m", "CharacterID": "rkcrb29dcbf5", "is_main": false },
+		{ "art_id": "5e45-mxkiu04b", "CharacterID": "rkcrb29dcbf5", "is_main": true },
+		{ "art_id": "77fd-h2r8tkg6", "CharacterID": "rkcrb29dcbf5", "is_main": false },
+		{ "art_id": "35f5-kxbkd6cl", "CharacterID": "rkcrb1254d5b", "is_main": false },
+		{ "art_id": "4e4a-jbe5z2ha", "CharacterID": "rkcrb1254d5b", "is_main": false },
+		{ "art_id": "af1e-tgfxq4gr", "CharacterID": "rkcrb1254d5b", "is_main": true },
+		{ "art_id": "b17e-v6jm83fs", "CharacterID": "rkcrb1254d5b", "is_main": false },
+		{ "art_id": "f01d-9dcmv9ao", "CharacterID": "rkcrb1254d5b", "is_main": false },
+		{ "art_id": "f65f-p0cr7tc7", "CharacterID": "rkcrb1254d5b", "is_main": false },
+		{ "art_id": "46c2-sy7byy2d", "CharacterID": "rkcr217cfce6", "is_main": true },
+		{ "art_id": "a55b-gwo99sp4", "CharacterID": "rkcr217cfce6", "is_main": false },
+		{ "art_id": "ba8e-1tdq0rli", "CharacterID": "rkcr217cfce6", "is_main": false }
+	],
+	"stats": [
+		{ "CharacterID": "rkcr7a18310c", "NameSlug": "fenrir", "Health": 44, "Stamina": null, "Attack": 22, "Speed": 9, "Mana": 9, "Weight": 50 },
+		{ "CharacterID": "rkcr6a2d88ba", "NameSlug": "freya", "Health": 90, "Stamina": null, "Attack": null, "Speed": null, "Mana": null, "Weight": 80 },
+		{ "CharacterID": "rkcrb29dcbf5", "NameSlug": "loki", "Health": 160, "Stamina": null, "Attack": null, "Speed": null, "Mana": null, "Weight": 80 },
+		{ "CharacterID": "rkcrb1254d5b", "NameSlug": "odin", "Health": 300, "Stamina": null, "Attack": null, "Speed": null, "Mana": null, "Weight": 100 },
+		{ "CharacterID": "rkcr217cfce6", "NameSlug": "thor", "Health": 200, "Stamina": null, "Attack": null, "Speed": null, "Mana": null, "Weight": 100 }
+	]
+}

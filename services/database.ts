@@ -1,72 +1,109 @@
-import { Database } from "bun:sqlite";
-import type { CardRow } from "@/types";
+import postgres from "postgres";
+import type { CardJoinRow } from "@/types";
 
-// Ruta de la base de datos - el árbol donde almacenamos las cartas
-const DB_PATH = Bun.env.DB_PATH ?? "cards.sqlite";
+const DATABASE_URL = Bun.env.DATABASE_URL ?? "postgresql://localhost:5432/ragnarok";
+const sql = postgres(DATABASE_URL);
 
-const db = new Database(DB_PATH);
+const BASE_QUERY = `
+	SELECT
+		c.art_id,
+		c."CharacterID",
+		ch."NameSlug",
+		c.is_main,
+		ch."FullName",
+		ch."Category",
+		ch."ShortDescription",
+		ch."Lore",
+		ch."ElementType",
+		ch."ChessPiece",
+		ch."Faction",
+		ch."Rarity",
+		ch."Link",
+		s."Health",
+		s."Stamina",
+		s."Attack",
+		s."Speed",
+		s."Mana",
+		s."Weight"
+	FROM cards c
+	JOIN characters ch ON c."CharacterID" = ch."CharacterID"
+	LEFT JOIN stats s ON c."CharacterID" = s."CharacterID"
+`;
 
-// Schema de la tabla cards
-// El índice en set_code acelera las búsquedas por colección
-db.exec(`
-	CREATE TABLE IF NOT EXISTS cards (
-		id TEXT PRIMARY KEY,
-		name TEXT NOT NULL,
-		set_code TEXT,
-		image_file TEXT NOT NULL,
-		description TEXT,
-		attack INTEGER,
-		health INTEGER,
-		cost INTEGER,
-		created_at TEXT NOT NULL DEFAULT (datetime('now'))
+export async function getAllCards(): Promise<CardJoinRow[]> {
+	return sql.unsafe<CardJoinRow[]>(`${BASE_QUERY} ORDER BY ch."FullName" ASC`);
+}
+
+export async function getCardsByFaction(faction: string): Promise<CardJoinRow[]> {
+	return sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE ch."Faction" = $1 ORDER BY ch."FullName" ASC`,
+		[faction]
 	);
-	CREATE INDEX IF NOT EXISTS idx_cards_set_code ON cards(set_code);
-`);
-
-// Invoca todas las cartas del reino
-export function getAllCards(): CardRow[] {
-	return db.query<CardRow, []>("SELECT * FROM cards ORDER BY id ASC").all();
 }
 
-// Filtra por colección (norse-gods, monsters, etc)
-export function getCardsBySet(setCode: string): CardRow[] {
-	return db
-		.query<CardRow, [string]>("SELECT * FROM cards WHERE set_code = ? ORDER BY id ASC")
-		.all(setCode);
+export async function getCardsByElement(element: string): Promise<CardJoinRow[]> {
+	return sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE ch."ElementType" = $1 ORDER BY ch."FullName" ASC`,
+		[element]
+	);
 }
 
-// Búsqueda por nombre - útil cuando no recuerdas el ID exacto
-export function searchCardsByName(query: string): CardRow[] {
-	return db
-		.query<CardRow, [string]>("SELECT * FROM cards WHERE name LIKE ? ORDER BY id ASC")
-		.all(`%${query}%`);
+export async function getCardsByRarity(rarity: string): Promise<CardJoinRow[]> {
+	return sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE ch."Rarity" = $1 ORDER BY ch."FullName" ASC`,
+		[rarity]
+	);
 }
 
-// Obtiene una carta específica por su ID único
-export function getCardById(id: string): CardRow | null {
-	return db
-		.query<CardRow, [string]>("SELECT * FROM cards WHERE id = ? LIMIT 1")
-		.get(id);
+export async function searchCards(query: string): Promise<CardJoinRow[]> {
+	const byId = await sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE c.art_id = $1`,
+		[query]
+	);
+
+	if (byId.length > 0) return byId;
+
+	const pattern = `%${query}%`;
+	const byPartialId = await sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE c.art_id ILIKE $1 ORDER BY c.art_id ASC`,
+		[pattern]
+	);
+
+	if (byPartialId.length > 0) return byPartialId;
+
+	return sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE ch."FullName" ILIKE $1 ORDER BY ch."FullName" ASC`,
+		[pattern]
+	);
 }
 
-// Cuenta total de cartas en la base
-export function countCards(): number {
-	const result = db.query<{ count: number }, []>("SELECT COUNT(*) as count FROM cards").get();
-	return result?.count ?? 0;
+export async function getCardById(artId: string): Promise<CardJoinRow | null> {
+	const rows = await sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} WHERE c.art_id = $1 LIMIT 1`,
+		[artId]
+	);
+	return rows[0] ?? null;
 }
 
-// Paginación para listados grandes - evita cargar todo en memoria
-export function getCardsPaginated(page: number, limit: number): CardRow[] {
+export async function countCards(): Promise<number> {
+	const result = await sql<{ count: string }[]>`SELECT COUNT(*) as count FROM cards`;
+	return parseInt(result[0]?.count ?? "0", 10);
+}
+
+export async function getCardsPaginated(page: number, limit: number): Promise<CardJoinRow[]> {
 	const offset = (page - 1) * limit;
-	return db
-		.query<CardRow, [number, number]>("SELECT * FROM cards ORDER BY id ASC LIMIT ? OFFSET ?")
-		.all(limit, offset);
+	return sql.unsafe<CardJoinRow[]>(
+		`${BASE_QUERY} ORDER BY ch."FullName" ASC LIMIT $1 OFFSET $2`,
+		[limit, offset]
+	);
 }
 
 export const databaseService = {
 	getAllCards,
-	getCardsBySet,
-	searchCardsByName,
+	getCardsByFaction,
+	getCardsByElement,
+	getCardsByRarity,
+	searchCards,
 	getCardById,
 	countCards,
 	getCardsPaginated,

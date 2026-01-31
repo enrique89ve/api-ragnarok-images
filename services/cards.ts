@@ -1,94 +1,106 @@
-import type { CardRow, PublicCard, SimpleCard, TableCard, PaginatedResult } from "@/types";
+import type { CardJoinRow, PublicCard, SimpleCard, TableCard, PaginatedResult } from "@/types";
 import { databaseService } from "@/services/database";
 
-// CDN donde viven las imágenes de las cartas
 const CDN_BASE = Bun.env.CDN_BASE ?? "https://cdn.d.v1.ragnaroknft.quest";
 
-// Construye la URL completa de la imagen
-function buildImageUrl(imageFile: string): string {
-	return `${CDN_BASE}/${encodeURIComponent(imageFile)}`;
+function buildImageUrl(artId: string): string {
+	return `${CDN_BASE}/${artId}.webp`;
 }
 
-// Transformadores: convierten el formato de BD al formato de API
-// Cada uno expone diferentes niveles de detalle
-
-function toSimpleCard(card: CardRow): SimpleCard {
-	return {
-		id: card.id,
-		name: card.name,
-		image: buildImageUrl(card.image_file),
-	};
+interface CardFilter {
+	faction?: string;
+	element?: string;
+	query?: string;
 }
 
-function toPublicCard(card: CardRow): PublicCard {
-	return {
-		id: card.id,
-		name: card.name,
-		set: card.set_code,
-		description: card.description,
-		stats: {
-			cost: card.cost,
-			attack: card.attack,
-			health: card.health,
-		},
-		image: {
-			file: card.image_file,
-			url: buildImageUrl(card.image_file),
-		},
-		createdAt: card.created_at,
-	};
-}
-
-function toTableCard(card: CardRow): TableCard {
-	return {
-		id: card.id,
-		name: card.name,
-		set: card.set_code,
-		cost: card.cost,
-		attack: card.attack,
-		health: card.health,
-		image: buildImageUrl(card.image_file),
-		createdAt: card.created_at,
-	};
-}
-
-// Lista simple - solo id, nombre e imagen
-// Ideal para galería, autocompletado, previews
-export function listCards(setCode?: string, query?: string): SimpleCard[] {
-	let cards: CardRow[];
-
-	if (setCode) {
-		cards = databaseService.getCardsBySet(setCode);
-	} else if (query) {
-		cards = databaseService.searchCardsByName(query);
-	} else {
-		cards = databaseService.getAllCards();
+async function fetchCards(filter?: CardFilter): Promise<CardJoinRow[]> {
+	if (filter?.faction) {
+		return databaseService.getCardsByFaction(filter.faction);
 	}
+	if (filter?.element) {
+		return databaseService.getCardsByElement(filter.element);
+	}
+	if (filter?.query) {
+		return databaseService.searchCards(filter.query);
+	}
+	return databaseService.getAllCards();
+}
 
+function toSimpleCard(card: CardJoinRow): SimpleCard {
+	return {
+		id: card.art_id,
+		name: card.FullName,
+		image: buildImageUrl(card.art_id),
+	};
+}
+
+function toPublicCard(card: CardJoinRow): PublicCard {
+	return {
+		id: card.art_id,
+		character: card.NameSlug,
+		name: card.FullName,
+		category: card.Category,
+		description: card.ShortDescription,
+		lore: card.Lore,
+		element: card.ElementType,
+		piece: card.ChessPiece,
+		faction: card.Faction,
+		rarity: card.Rarity,
+		mainArt: card.is_main,
+		stats: {
+			health: card.Health,
+			stamina: card.Stamina,
+			attack: card.Attack,
+			speed: card.Speed,
+			mana: card.Mana,
+			weight: card.Weight,
+		},
+		image: buildImageUrl(card.art_id),
+		wiki: card.Link,
+	};
+}
+
+function toTableCard(card: CardJoinRow): TableCard {
+	return {
+		id: card.art_id,
+		character: card.NameSlug,
+		name: card.FullName,
+		element: card.ElementType,
+		faction: card.Faction,
+		rarity: card.Rarity,
+		health: card.Health,
+		attack: card.Attack,
+		mainArt: card.is_main,
+		image: buildImageUrl(card.art_id),
+	};
+}
+
+export async function listCards(
+	faction?: string,
+	element?: string,
+	query?: string
+): Promise<SimpleCard[]> {
+	const cards = await fetchCards({ faction, element, query });
 	return cards.map(toSimpleCard);
 }
 
-// Lista completa con stats de batalla
-// Para cuando necesitas mostrar poder, vida, costo
-export function listCardsWithStats(setCode?: string, query?: string): PublicCard[] {
-	let cards: CardRow[];
-
-	if (setCode) {
-		cards = databaseService.getCardsBySet(setCode);
-	} else if (query) {
-		cards = databaseService.searchCardsByName(query);
-	} else {
-		cards = databaseService.getAllCards();
-	}
-
+export async function listCardsWithStats(
+	faction?: string,
+	element?: string,
+	query?: string
+): Promise<PublicCard[]> {
+	const cards = await fetchCards({ faction, element, query });
 	return cards.map(toPublicCard);
 }
 
-// Listado paginado para tablas y grids
-// Incluye metadata de paginación para UI
-export function listAllCards(page: number, limit: number): PaginatedResult<TableCard> {
-	const total = databaseService.countCards();
-	const cards = databaseService.getCardsPaginated(page, limit);
+export async function listAllCards(
+	page: number,
+	limit: number
+): Promise<PaginatedResult<TableCard>> {
+	const [total, cards] = await Promise.all([
+		databaseService.countCards(),
+		databaseService.getCardsPaginated(page, limit),
+	]);
 
 	return {
 		data: cards.map(toTableCard),
@@ -101,9 +113,8 @@ export function listAllCards(page: number, limit: number): PaginatedResult<Table
 	};
 }
 
-// Detalle completo de una carta específica
-export function getCard(id: string): PublicCard | null {
-	const card = databaseService.getCardById(id);
+export async function getCard(id: string): Promise<PublicCard | null> {
+	const card = await databaseService.getCardById(id);
 	return card ? toPublicCard(card) : null;
 }
 

@@ -3,11 +3,11 @@ export const openApiSpec = {
 	info: {
 		title: "Ragnarok Cards API",
 		version: "1.0.0",
-		description: "API de solo lectura para consultar cartas del juego Ragnarok NFT. Las imágenes se sirven desde Cloudflare CDN.",
+		description: "Read-only API for querying Ragnarok NFT game cards. 406 cards, 197 characters. Images served from Cloudflare CDN.",
 	},
 	servers: [
 		{
-			url: "http://localhost:3000",
+			url: "http://localhost:4005",
 			description: "Local development",
 		},
 	],
@@ -25,6 +25,7 @@ export const openApiSpec = {
 									type: "object",
 									properties: {
 										ok: { type: "boolean", example: true },
+										realm: { type: "string", example: "midgard" },
 									},
 								},
 							},
@@ -36,19 +37,31 @@ export const openApiSpec = {
 		"/cards": {
 			get: {
 				summary: "List cards (simple)",
-				description: "Returns a simple list with id, name, and image URL only",
+				description: "Returns a simple list with id, name, and image URL. Ideal for galleries and autocomplete.",
 				tags: ["Cards"],
 				parameters: [
 					{
-						name: "set",
+						name: "faction",
 						in: "query",
-						description: "Filter by set code",
-						schema: { type: "string" },
+						description: "Filter by faction",
+						schema: {
+							type: "string",
+							enum: ["aesir", "vanir", "jotnar", "mystical beings", "pets"],
+						},
+					},
+					{
+						name: "element",
+						in: "query",
+						description: "Filter by element",
+						schema: {
+							type: "string",
+							enum: ["fire", "water", "wind", "earth"],
+						},
 					},
 					{
 						name: "q",
 						in: "query",
-						description: "Search by name",
+						description: "Search by character name",
 						schema: { type: "string" },
 					},
 				],
@@ -70,19 +83,31 @@ export const openApiSpec = {
 		"/cards/stats": {
 			get: {
 				summary: "List cards (full with stats)",
-				description: "Returns full card details including stats, description, and timestamps",
+				description: "Returns full card details including stats, lore, and character info.",
 				tags: ["Cards"],
 				parameters: [
 					{
-						name: "set",
+						name: "faction",
 						in: "query",
-						description: "Filter by set code",
-						schema: { type: "string" },
+						description: "Filter by faction",
+						schema: {
+							type: "string",
+							enum: ["aesir", "vanir", "jotnar", "mystical beings", "pets"],
+						},
+					},
+					{
+						name: "element",
+						in: "query",
+						description: "Filter by element",
+						schema: {
+							type: "string",
+							enum: ["fire", "water", "wind", "earth"],
+						},
 					},
 					{
 						name: "q",
 						in: "query",
-						description: "Search by name",
+						description: "Search by character name",
 						schema: { type: "string" },
 					},
 				],
@@ -135,14 +160,16 @@ export const openApiSpec = {
 		"/cards/{id}": {
 			get: {
 				summary: "Get card by ID",
+				description: "Returns full details for a specific card artwork",
 				tags: ["Cards"],
 				parameters: [
 					{
 						name: "id",
 						in: "path",
 						required: true,
-						description: "Card ID",
+						description: "Card art ID",
 						schema: { type: "string" },
+						example: "6333-p1fmzcky",
 					},
 				],
 				responses: {
@@ -171,50 +198,55 @@ export const openApiSpec = {
 			SimpleCard: {
 				type: "object",
 				properties: {
-					id: { type: "string", example: "odin-001" },
-					name: { type: "string", example: "Odin, Allfather" },
-					image: { type: "string", format: "uri", example: "https://cdn.d.v1.ragnaroknft.quest/odin-001.webp" },
+					id: { type: "string", example: "6333-p1fmzcky" },
+					name: { type: "string", example: "frigg" },
+					image: { type: "string", format: "uri", example: "https://cdn.d.v1.ragnaroknft.quest/6333-p1fmzcky.webp" },
 				},
 				required: ["id", "name", "image"],
 			},
 			PublicCard: {
 				type: "object",
 				properties: {
-					id: { type: "string", example: "odin-001" },
-					name: { type: "string", example: "Odin, Allfather" },
-					set: { type: "string", nullable: true, example: "norse-gods" },
-					description: { type: "string", nullable: true, example: "The king of Asgard" },
+					id: { type: "string", example: "6333-p1fmzcky" },
+					character: { type: "string", example: "frigg" },
+					name: { type: "string", example: "frigg" },
+					category: { type: "string", nullable: true, example: "goddesses" },
+					description: { type: "string", nullable: true, example: "odin's wife, wisdom" },
+					lore: { type: "string", nullable: true, example: "odin's wife, associated with foresight and wisdom, mother of baldr." },
+					element: { type: "string", nullable: true, example: "wind" },
+					piece: { type: "string", nullable: true, example: "queen" },
+					faction: { type: "string", nullable: true, example: "aesir" },
+					rarity: { type: "string", nullable: true, example: "rare" },
+					mainArt: { type: "boolean", example: true },
 					stats: { $ref: "#/components/schemas/CardStats" },
-					image: { $ref: "#/components/schemas/CardImage" },
-					createdAt: { type: "string", example: "2026-01-29 04:33:59" },
+					image: { type: "string", format: "uri", example: "https://cdn.d.v1.ragnaroknft.quest/6333-p1fmzcky.webp" },
+					wiki: { type: "string", nullable: true, format: "uri", example: "https://mythus.fandom.com/wiki/frigg" },
 				},
 			},
 			CardStats: {
 				type: "object",
 				properties: {
-					cost: { type: "integer", nullable: true, example: 8 },
-					attack: { type: "integer", nullable: true, example: 6 },
-					health: { type: "integer", nullable: true, example: 10 },
-				},
-			},
-			CardImage: {
-				type: "object",
-				properties: {
-					file: { type: "string", example: "odin-001.webp" },
-					url: { type: "string", format: "uri", example: "https://cdn.d.v1.ragnaroknft.quest/odin-001.webp" },
+					health: { type: "integer", nullable: true, example: 300 },
+					stamina: { type: "integer", nullable: true, example: null },
+					attack: { type: "integer", nullable: true, example: null },
+					speed: { type: "integer", nullable: true, example: null },
+					mana: { type: "integer", nullable: true, example: null },
+					weight: { type: "integer", nullable: true, example: 80 },
 				},
 			},
 			TableCard: {
 				type: "object",
 				properties: {
-					id: { type: "string" },
-					name: { type: "string" },
-					set: { type: "string", nullable: true },
-					cost: { type: "integer", nullable: true },
-					attack: { type: "integer", nullable: true },
-					health: { type: "integer", nullable: true },
-					image: { type: "string", format: "uri" },
-					createdAt: { type: "string" },
+					id: { type: "string", example: "6333-p1fmzcky" },
+					character: { type: "string", example: "frigg" },
+					name: { type: "string", example: "frigg" },
+					element: { type: "string", nullable: true, example: "wind" },
+					faction: { type: "string", nullable: true, example: "aesir" },
+					rarity: { type: "string", nullable: true, example: "rare" },
+					health: { type: "integer", nullable: true, example: 300 },
+					attack: { type: "integer", nullable: true, example: null },
+					mainArt: { type: "boolean", example: true },
+					image: { type: "string", format: "uri", example: "https://cdn.d.v1.ragnaroknft.quest/6333-p1fmzcky.webp" },
 				},
 			},
 			PaginatedTableCards: {
@@ -229,8 +261,8 @@ export const openApiSpec = {
 						properties: {
 							page: { type: "integer", example: 1 },
 							limit: { type: "integer", example: 20 },
-							total: { type: "integer", example: 150 },
-							totalPages: { type: "integer", example: 8 },
+							total: { type: "integer", example: 406 },
+							totalPages: { type: "integer", example: 21 },
 						},
 					},
 				},
@@ -238,12 +270,8 @@ export const openApiSpec = {
 			ApiError: {
 				type: "object",
 				properties: {
-					error: { type: "string", example: "Validation failed" },
-					details: {
-						type: "array",
-						items: { type: "string" },
-						example: ["id is required", "name is required"],
-					},
+					error: { type: "string", example: "This card was lost in Ragnarok" },
+					hint: { type: "string", example: "Check the ID or browse /cards" },
 				},
 			},
 		},
