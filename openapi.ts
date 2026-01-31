@@ -1,16 +1,17 @@
-export const openApiSpec = {
-	openapi: "3.1.0",
-	info: {
-		title: "Ragnarok Cards API",
-		version: "1.0.0",
-		description: "Read-only API for querying Ragnarok NFT game cards. 406 cards, 197 characters. Images served from Cloudflare CDN.",
-	},
-	servers: [
-		{
-			url: "http://localhost:4005",
-			description: "Local development",
+export function getOpenApiSpec(baseUrl: string) {
+	return {
+		openapi: "3.1.0",
+		info: {
+			title: "Ragnarok Cards API",
+			version: "1.0.0",
+			description: "Read-only API for querying Ragnarok NFT game cards. 406 cards, 197 characters. Images served from Cloudflare CDN.",
 		},
-	],
+		servers: [
+			{
+				url: baseUrl,
+				description: baseUrl.includes("localhost") ? "Local development" : "Production",
+			},
+		],
 	paths: {
 		"/health": {
 			get: {
@@ -276,4 +277,5 @@ export const openApiSpec = {
 			},
 		},
 	},
-};
+	};
+}

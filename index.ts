@@ -1,5 +1,5 @@
 import { cardsService } from "@/services/cards";
-import { openApiSpec } from "@/openapi";
+import { getOpenApiSpec } from "@/openapi";
 
 const CARD_ID_PATTERN = /^\/cards\/([a-zA-Z0-9_-]+)$/;
 const CORS_ORIGIN = Bun.env.CORS_ORIGIN ?? "*";
@@ -29,6 +29,10 @@ const server = Bun.serve({
 			return new Response(null, { headers: corsHeaders });
 		}
 
+		if (pathname === "/") {
+			return Response.redirect(new URL("/docs", req.url).href, 302);
+		}
+
 		if (pathname === "/health") {
 			return jsonResponse({ ok: true, realm: "midgard" });
 		}
@@ -50,7 +54,8 @@ const server = Bun.serve({
 		}
 
 		if (pathname === "/openapi.json") {
-			return jsonResponse(openApiSpec);
+			const baseUrl = new URL(req.url).origin;
+			return jsonResponse(getOpenApiSpec(baseUrl));
 		}
 
 		if (req.method === "GET" && pathname === "/cards") {
